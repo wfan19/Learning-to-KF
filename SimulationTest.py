@@ -1,37 +1,43 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import math
 from matplotlib.widgets import Slider
 
 ENTRIES = 10
 BASEVALUE = 30
 NOISE = 10
 SEED = 200000
+RATEOFCHANGE = 5
 
 np.random.seed(SEED)
 
-numbers = np.random.randint(-NOISE, NOISE, ENTRIES)
+def generateDataSet():
+    rawData = []
+    for i in range(ENTRIES):
+        rawData.append(BASEVALUE + math.sqrt(i * RATEOFCHANGE))
+    noisyData = rawData + np.random.randint(-NOISE, NOISE, ENTRIES)
+    return rawData, noisyData
+    
+rawNumbers, noisyNumbers = generateDataSet()
 
-numbers += BASEVALUE
-
-print(numbers)
-
-figure, ax = plt.subplots()
-plt.subplots_adjust(left = 0.25, bottom = 0.25)
-
-plt.plot([0, ENTRIES], [BASEVALUE, BASEVALUE], color = 'black', linewidth = "3", zorder = 0)
+print(noisyNumbers)
 
 counterArray = []
 for i in range(ENTRIES):
     counterArray.append(i)
-measurement_plot, = plt.plot(counterArray, numbers, zorder = 10, linewidth = "2")
+
+truth_plot, = plt.plot(counterArray, rawNumbers, color = 'black', linewidth = "2", zorder = 0)
+measurement_plot, = plt.plot(counterArray, noisyNumbers, zorder = 10, linewidth = "2")
+filtered_plot, = plt.plot(counterArray, counterArray, color = 'red', zorder = 5, linewidth = "2")
+
 plt.ylim(0,BASEVALUE + NOISE + BASEVALUE/10)
+figure, ax = plt.subplots()
+plt.subplots_adjust(left = 0.25, bottom = 0.25)
 
 base_xhat = 10
 base_kalmanGain = 0
 base_errorCovariance = 2 * (NOISE**2)
 base_measurementCovariance = NOISE**2
-
-filtered_plot, = plt.plot(counterArray, counterArray, color = 'red', zorder = 5, linewidth = "2")
 
 axcolor = "lightgoldenrodyellow"
 axXhat = plt.axes([0.25, 0.05, 0.65, 0.03], facecolor = axcolor)
@@ -41,19 +47,18 @@ axMeasurementCovariance = plt.axes([0.25, 0.2, 0.65, 0.03], facecolor = axcolor)
 
 sXhat = Slider(axXhat, 'xhat', 0.1, 2 * BASEVALUE, valinit = base_xhat)
 sSeed = Slider(aSeed, 'Seed', 0, SEED, valinit = SEED, valstep=1)
-sErrorCovariance = Slider(axErrorCovariance, 'Error Covariance', 0.1, 2 * BASEVALUE, valinit = base_errorCovariance)
-sMeasurementCovariance = Slider(axMeasurementCovariance, 'MeasurementCovariance', 0.1, 2 * BASEVALUE, valinit = base_measurementCovariance)
+sErrorCovariance = Slider(axErrorCovariance, 'Error Covariance', 0.1, 2 * base_errorCovariance, valinit = base_errorCovariance)
+sMeasurementCovariance = Slider(axMeasurementCovariance, 'MeasurementCovariance', 0.1, 2 * base_measurementCovariance, valinit = base_measurementCovariance)
 
 def filter(xhat, seed, errorCovariance, measurementCovariance):
     print(f"xhat: {xhat}, seed: {seed}, errorCovariance: {errorCovariance}, measurementCovariance: {measurementCovariance}")
     
     np.random.seed(int(seed))
 
-    numbers = np.random.randint(-NOISE, NOISE, ENTRIES)
-    numbers += BASEVALUE
+    rawNumbers, noisyNumbers = generateDataSet()
 
     filteredValues = []
-    for measurement in numbers:
+    for measurement in noisyNumbers:
 
         # Predict step
         xhat = xhat + 0
@@ -68,7 +73,8 @@ def filter(xhat, seed, errorCovariance, measurementCovariance):
         filteredValues.append(xhat)
         # print(f"New xhat: {xhat}")
 
-    measurement_plot.set_ydata(numbers)
+    truth_plot.set_ydata(rawNumbers)
+    measurement_plot.set_ydata(noisyNumbers)
     filtered_plot.set_ydata(filteredValues)
     figure.canvas.draw_idle()
 
