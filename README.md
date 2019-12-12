@@ -1,5 +1,7 @@
 # Bill learning how to Kalman Filter
 
+[![Run on Repl.it](https://repl.it/badge/github/wfan19/Learning-to-KF)](https://repl.it/github/wfan19/Learning-to-KF)
+
 This repo is going to contain various learning projects that involve simple Kalman Filters (if there's such a thing as a simple Kalman Filter).
 
 ## Projects overview:

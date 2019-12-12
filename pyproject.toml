@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "runner"
+version = "0.1.0"
+description = ""
+authors = ["wfan19 <1472451850@qq.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+matplotlib = "^3.1"
+numpy = "^1.17"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
