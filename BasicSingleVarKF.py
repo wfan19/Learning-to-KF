@@ -1,6 +1,6 @@
 # A simple kalman filter for a constant acceleration model, no input
-# The model used for the system transform function is simply based on the constant acceleration data
-# Therefore this model is not applicable to situations with non-constant acceleration
+# The model used for the system transform function is the same model used to generate the raw truth data
+# Therefore this filter's accuracy is a kind of due to cheating.
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -32,7 +32,7 @@ for i in range(ENTRIES):
     counterArray.append(i * DELTA_T)
 
 figure, ax = plt.subplots()
-plt.subplots_adjust(left = 0.25, bottom = 0.25)
+plt.subplots_adjust(bottom = 0.4)
 plt.ylim(0,noisyNumbers[ENTRIES - 1] * 1.1)
 plt.ylabel("Distance (m)")
 plt.xlabel("Time (s)")
