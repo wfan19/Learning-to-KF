@@ -27,9 +27,7 @@ rawNumbers, noisyNumbers = generateDataSet()
 
 print(noisyNumbers)
 
-counterArray = []
-for i in range(ENTRIES):
-    counterArray.append(i * DELTA_T)
+counterArray = list(range(ENTRIES))
 
 figure, ax = plt.subplots()
 plt.subplots_adjust(bottom = 0.4)
