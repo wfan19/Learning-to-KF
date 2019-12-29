@@ -55,18 +55,22 @@ class Output(Enum):
 outputCount = len(Output)
 
 estimated_X, estimated_V, estimated_A = [],[],[]
-def filter(seed, errorCovariance_0, measurementCovariance):
+def filter(seed, errorCovariance_0, measurementCovariance, processCovariance):
 
     # states = np.empty([stateCount, 1])
-    states = [0, 25, 30]
-    transfer = np.empty([stateCount, stateCount])
-    measurement_transfer = np.empty([outputCount, stateCount])
+    states = [0, 25, 5]
+    transfer = np.zeros((stateCount, stateCount))
+
+    # State to measurement transfer function
+    # The C in y(t) = C*x(t) + D*u(t)
+    measurement_transfer = np.zeros((outputCount, stateCount))
+    measurement_transfer[0, State.v.value] = 1
 
     errorCovariance = errorCovariance_0
     
     for index, (timeStamp, velocity) in enumerate(zip(timeStamps, noisy_V)):
         deltaT = timeStamp - timeStamps[index - 1] if index > 0 else timeStamps[1] - timeStamps[0]
-        print(f"Index::deltaT::Velocity: {index}::{deltaT}::{velocity}")
+        print(f"\nIndex::deltaT::Velocity: {index}::{deltaT}::{velocity}")
 
         # =============== Predict step ===============
         # x(t+1|t) = x + v*t + 1/2(a*t^2) (t|t)
@@ -86,39 +90,39 @@ def filter(seed, errorCovariance_0, measurementCovariance):
         # We are not using input (u(t)) for now
         states = transfer.dot(states)
 
-        # P(t+1|t) = A*P*A'
-        # We are not using process noise variance for now
-        errorCovariance = transfer.dot(errorCovariance.dot(transfer.transpose()))
+        # P(t+1|t) = A*P*A' + Q
+        # Process noise here is just to indicate that the prediction of constant acceleration is very very wrong.
+        errorCovariance = transfer.dot(errorCovariance.dot(transfer.transpose())) + processCovariance
         print(f"Prediction: \n{states}")
         print(f"Error covariance: \n{errorCovariance}")
 
         # =============== Correct/Measurement step ===============
-        
-        # State to measurement transfer function
-        # The C in y(t) = C*x(t) + D*u(t)
-        measurement_transfer[0, State.v.value] = 1
 
         kalmanGain = (errorCovariance.dot(measurement_transfer.transpose())).dot(
                     np.linalg.inv(measurement_transfer.dot(errorCovariance.dot(measurement_transfer.transpose())) + measurementCovariance))
         
         print(f"Kalman gain: \n{kalmanGain}")
         states = states + kalmanGain.dot([velocity] - measurement_transfer.dot(states))
+        print(f"Estimation: \n{states}")
 
         errorCovariance = (np.identity(stateCount) - kalmanGain.dot(measurement_transfer)).dot(errorCovariance)
+        print(f"Error covariance after update: \n{errorCovariance}")
 
-        print(f"Estimation: \n{states}\n")
         estimated_X.append(states[State.x.value])
         estimated_V.append(states[State.v.value])
         estimated_A.append(states[State.a.value])
 
 
-# errorCovariance_initial = np.full([stateCount, stateCount], 1 * NOISE**2)
-# measurementCovariance_initial = np.full([outputCount, outputCount], 0.5 * NOISE**2)
+measurementCovariance = np.full([outputCount, outputCount], 0.25 * NOISE**2)
+
 errorCovariance_initial = np.identity(stateCount) * NOISE
-measurementCovariance_initial = np.identity(outputCount) * 0.5 * NOISE
+
+processCovariance = np.zeros((stateCount, stateCount))
+processCovariance[State.a.value, State.a.value] = 1000000000
+
 print(f"Error covariance initial: \n{errorCovariance_initial}")
-print(f"Measurement covariance initial: \n{measurementCovariance_initial}")
-filter(SEED, errorCovariance_initial, measurementCovariance_initial)
+print(f"Measurement covariance initial: \n{measurementCovariance}")
+filter(SEED, errorCovariance_initial, measurementCovariance, processCovariance)
 
 # PyPlot plotting
 fig, (row1) = plt.subplots(1,3)
