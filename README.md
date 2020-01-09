@@ -1,10 +1,19 @@
 # Bill learning how to Kalman Filter
 
-[![Run on Repl.it](https://repl.it/badge/github/wfan19/Learning-to-KF)](https://repl.it/github/wfan19/Learning-to-KF)
-
 This repo is going to contain various learning projects that involve simple Kalman Filters (if there's such a thing as a simple Kalman Filter).
 
-## Projects overview:
+## Kalman Filter simulation results:
+### 50 Data Points:
+![50 Data Points](https://i.imgur.com/ywXoEKe.png)
+
+### 100 Data Points:
+![100 Data Points](https://i.imgur.com/L3OeHQC.png)
+
+### 1000 Data Points:
+![1000 Data Points](https://i.imgur.com/FqEcVsg.png)
+
+
+## Project goals:
 - Python KF simulation
   - Model a simple diff-drive with random measurement noise
   - Learning points:
@@ -23,12 +32,14 @@ This repo is going to contain various learning projects that involve simple Kalm
 ### Progress:
 - Basic graphing and data generation
 - Filter 1D static model
+- Filter 1D motion 3 state physical model w/o input (Assuming constant accel)
 
 ### Next:
-- Filter 1D first order model(Constant speed)
-- Filter 1D second order model (Constant accel)
-- State space representation of 2D static, 1st, and 2nd order models
-- Filter...
+- Add sliders
+- Build python & pyplot framework for generating plots w/ sliders easily
+- Model a robot drive with input, including input into physical model
 
+## ROS:
+### TODO!!
 
 

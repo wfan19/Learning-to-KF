@@ -27,6 +27,7 @@ def generateDataSet():
         raw_A.append(A_func(j))
         timeStamps.append(j)
     NOISE = sum(raw_V)/len(raw_V) * 0.5
+    NOISE *= 2
     noisy_V = raw_V + 2 * NOISE * np.random.ranf(ENTRIES) - NOISE
     return timeStamps, raw_X, raw_V, raw_A, noisy_V
 
@@ -97,12 +98,15 @@ def filter(seed, errorCovariance_0, measurementCovariance, processCovariance):
         print(f"Error covariance: \n{errorCovariance}")
 
         # =============== Correct/Measurement step ===============
-
+        
+        # K(t+1) = P(t+1|t)*C'*((C*P(t+1|t)*C' + R)^-1)
         kalmanGain = (errorCovariance.dot(measurement_transfer.transpose())).dot(
                     np.linalg.inv(measurement_transfer.dot(errorCovariance.dot(measurement_transfer.transpose())) + measurementCovariance))
-        
         print(f"Kalman gain: \n{kalmanGain}")
+
+        # Xhat(t+1|t+1) = Xhat(t+1|t) + K(t+1)*(y(t+1) - C*Xhat(t+1|t))
         states = states + kalmanGain.dot([velocity] - measurement_transfer.dot(states))
+        print(f"Measured vel: {velocity}")
         print(f"Estimation: \n{states}")
 
         errorCovariance = (np.identity(stateCount) - kalmanGain.dot(measurement_transfer)).dot(errorCovariance)
@@ -113,12 +117,12 @@ def filter(seed, errorCovariance_0, measurementCovariance, processCovariance):
         estimated_A.append(states[State.a.value])
 
 
-measurementCovariance = np.full([outputCount, outputCount], 0.25 * NOISE**2)
+measurementCovariance = np.full([outputCount, outputCount], 1 * NOISE**2)
 
 errorCovariance_initial = np.identity(stateCount) * NOISE
 
 processCovariance = np.zeros((stateCount, stateCount))
-processCovariance[State.a.value, State.a.value] = 1000000000
+processCovariance[State.a.value, State.a.value] = 3
 
 print(f"Error covariance initial: \n{errorCovariance_initial}")
 print(f"Measurement covariance initial: \n{measurementCovariance}")
@@ -136,9 +140,9 @@ Xplt_estimate = axX.plot(timeStamps, estimated_X, color="green", linewidth = "1.
 axX.set_ylim(min(raw_X) * 1.1, max(raw_X) * 1.1)
 axX.set_title("Position")
 
-Vplt_truth = axV.plot(timeStamps, raw_V, color="blue", linewidth = "1.5")
-Vplt_noisy = axV.plot(timeStamps, noisy_V, color="red", linewidth = "1.5")
-Vplt_estiamte = axV.plot(timeStamps, estimated_V, color="green", linewidth = "1.5")
+Vplt_truth = axV.plot(timeStamps, raw_V, color="blue", linewidth = "1.5", zorder = 5)
+Vplt_noisy = axV.plot(timeStamps, noisy_V, color="red", linewidth = "1.5", zorder = 0)
+Vplt_estiamte = axV.plot(timeStamps, estimated_V, color="green", linewidth = "1.5", zorder = 10)
 axV.set_ylim(min(noisy_V) * 1.1, max(noisy_V) * 1.1)
 axV.set_title("Velocity")
 
